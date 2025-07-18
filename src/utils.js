@@ -6,22 +6,17 @@ export const setConnectedStatus = () => {
   const editionMode = document.getElementById('edition-mode');
   const header = document.querySelector('header');
 
-  console.log('filterButtons', filterButtons); 
-
   if(token) {
-    console.log('Utilisateur connecté');
     connectedStatus.innerHTML = 'logout';
     modifyGalleryButton.style.display = 'flex';
     filterButtons.style.display = 'none'; // Masque les boutons de filtre
     editionMode.style.display = 'flex'; // Afficher le mode édition
     header.style.marginTop = '90px'; // Ajuster le margin-top du header
-    console.log(connectedStatus);
     connectedStatus.addEventListener('click', () => {
       localStorage.removeItem('token'); // Supprimer le token du localStorage
       window.location.href = 'login.html'; // Rediriger vers la page de connexion
     });
   } else {
-    console.log('Utilisateur non connecté');
     connectedStatus.innerHTML = 'login';
     modifyGalleryButton.style.display = 'none';
     filterButtons.style.display = 'flex'; // Affiche les boutons de filtre  
