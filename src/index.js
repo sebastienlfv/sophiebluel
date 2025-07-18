@@ -218,7 +218,6 @@ function deleteWork(workId) {
       if (!response.ok) {
         throw new Error(`Erreur HTTP : ${response.status}`);
       }
-      console.log(`Travail avec l'ID ${workId} supprimé avec succès.`);
 
       // Supprimer dynamiquement l'élément de la galerie
       const workElement = document.querySelector(`[data-id="${workId}"]`);
@@ -258,8 +257,6 @@ function addWork(title, imageFile, categoryId) {
       return response.json();
     })
     .then(newWork => {
-      console.log('Travail ajouté avec succès :', newWork);
-
       // Ajouter dynamiquement le nouveau travail à la galerie
       const figureElement = document.createElement('figure');
       const imgElement = document.createElement('img');

@@ -21,7 +21,6 @@ loginForm.addEventListener('submit', async (event) => {
   const email = document.querySelector('#email').value;
   const password = document.querySelector('#password').value;
 
-  console.log(email, password);
   try {
     const response = await fetch(loginUrl, {
       method: 'POST',
