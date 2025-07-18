@@ -193,10 +193,6 @@ function toggleGalleryModal(requestType) {
       const imageFile = imageInput.files[0];
       const categoryId = parseInt(categorySelect.value);
 
-      console.log('Titre :', title);
-      console.log('Fichier sélectionné :', imageFile);
-      console.log('Catégorie :', categoryId);
-
       if (!title || !imageFile || isNaN(categoryId)) {
         console.error('Tous les champs doivent être remplis.');
         return;
