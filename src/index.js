@@ -1,24 +1,26 @@
 import { setConnectedStatus, toggleModal } from "../src/utils.js";
 
+// --- Variables globales et sélecteurs DOM ---
 const url = "http://localhost:5678/api";
 const worksUrl = `${url}/works`;
 const gallery = document.getElementsByClassName("gallery")[0];
 const filterButtons = document.querySelectorAll(".filter-button");
 
-// Mettre à jour le statut de connexion
+// --- Met à jour le statut de connexion à l'ouverture de la page ---
 document.addEventListener("DOMContentLoaded", () => {
   setConnectedStatus();
 });
 
-// Fonction pour afficher les images filtrées
+// --- Affiche les travaux dans la galerie, avec filtrage par catégorie ---
 function displayWorks(works, filterCategory = "all") {
-  gallery.innerHTML = ""; // Vider la galerie avant d'afficher les nouvelles images
+  gallery.innerHTML = ""; // Vide la galerie avant d'afficher les nouvelles images
 
   works
     .filter(
       (work) => filterCategory === "all" || work.categoryId === filterCategory
     )
     .forEach((work) => {
+      // Création des éléments pour chaque travail
       const figureElement = document.createElement("figure");
       const imgElement = document.createElement("img");
       const figcaptionElement = document.createElement("figcaption");
@@ -33,7 +35,7 @@ function displayWorks(works, filterCategory = "all") {
     });
 }
 
-// Récupérer les données depuis l'API
+// --- Récupère les travaux depuis l'API et initialise les filtres ---
 fetch(worksUrl)
   .then((response) => {
     if (!response.ok) {
@@ -42,23 +44,23 @@ fetch(worksUrl)
     return response.json();
   })
   .then((works) => {
-    // Afficher toutes les images par défaut
+    // Affiche toutes les images par défaut
     displayWorks(works);
 
-    // Ajouter des écouteurs d'événements aux boutons de filtre
+    // Ajoute les écouteurs d'événements aux boutons de filtre
     filterButtons.forEach((button) => {
       button.addEventListener("click", () => {
-        // Récupérer la catégorie à partir de l'attribut data-filter
+        // Récupère la catégorie à partir de l'attribut data-filter
         const filterCategory =
           button.dataset.filter === "all"
             ? "all"
             : parseInt(button.dataset.filter);
 
-        // Mettre à jour l'état actif des boutons
+        // Met à jour l'état actif des boutons
         filterButtons.forEach((btn) => btn.classList.remove("active"));
         button.classList.add("active");
 
-        // Afficher les images filtrées
+        // Affiche les images filtrées
         displayWorks(works, filterCategory);
       });
     });
@@ -66,11 +68,12 @@ fetch(worksUrl)
   .catch((error) => {
     console.error("Erreur lors de la récupération des données :", error);
 
+    // Affiche le loader en cas d'erreur
     const loader = document.querySelector(".loader");
-    loader.style.display = "flex"; // Afficher le loader en cas d'erreur
+    loader.style.display = "flex";
   });
 
-// Fonction pour récupérer et afficher les travaux
+// --- Fonction utilitaire pour rafraîchir la galerie depuis l'API ---
 function fetchAndDisplayWorks() {
   fetch(worksUrl)
     .then((response) => {
@@ -87,23 +90,20 @@ function fetchAndDisplayWorks() {
     });
 }
 
-// Fonction pour basculer la modal et gérer les requêtes GET et POST
+// --- Gère l'ouverture et le contenu de la modal (GET = galerie, POST = ajout) ---
 function toggleGalleryModal(requestType) {
   const modalContent = document.getElementById("gallery-container");
   const modalTitle = modalContent.querySelector("h1");
   const modalItems = modalContent.querySelector("#gallery-items");
   const submitButton = document.querySelector("#submit-button");
 
-  // Afficher la modal avec callback pour actualiser la galerie
+  // Ouvre la modal et rafraîchit la galerie à la fermeture
   toggleModal(true, fetchAndDisplayWorks);
 
   if (requestType === "GET") {
-    document.getElementById("gallery-back-button").style.display = "none"; // Cacher le bouton de retour pour GET
-
-    // Modifier le contenu pour GET
-    modalTitle.textContent = "Galerie photo"; // Titre pour la modal
-
-    // Vider le contenu existant avant de générer les nouvelles images
+    // --- Affichage de la galerie (GET) ---
+    document.getElementById("gallery-back-button").style.display = "none";
+    modalTitle.textContent = "Galerie photo";
     modalItems.innerHTML = "";
     modalItems.style.justifyContent = "center";
     modalItems.style.width = "90%";
@@ -113,7 +113,7 @@ function toggleGalleryModal(requestType) {
     submitButton.style.backgroundColor = "#1D6154";
     submitButton.disabled = false;
 
-    // Effectuer une requête GET pour récupérer les travaux
+    // Récupère et affiche les travaux dans la modal
     fetch(worksUrl)
       .then((response) => {
         if (!response.ok) {
@@ -122,7 +122,7 @@ function toggleGalleryModal(requestType) {
         return response.json();
       })
       .then((works) => {
-        // Générer le HTML pour les travaux
+        // Génère le HTML pour chaque travail dans la galerie modale
         modalItems.innerHTML = works
           .map(
             (work) => `
@@ -133,14 +133,15 @@ function toggleGalleryModal(requestType) {
         `
           )
           .join("");
-        submitButton.innerHTML = "Ajouter une photo"; // Modifier le texte du bouton
+        submitButton.innerHTML = "Ajouter une photo";
 
+        // Ajoute les écouteurs pour la suppression d'image
         const deleteButtons = document.querySelectorAll(".delete-image");
         deleteButtons.forEach((button) => {
           button.addEventListener("click", (event) => {
-            event.preventDefault(); // Empêcher le comportement par défaut
-            const workId = event.target.parentElement.dataset.id; // Récupérer l'ID de l'image
-            deleteWork(workId); // Appeler la fonction de suppression
+            event.preventDefault();
+            const workId = event.target.parentElement.dataset.id;
+            deleteWork(workId);
           });
         });
       })
@@ -149,13 +150,13 @@ function toggleGalleryModal(requestType) {
         modalItems.innerHTML = "<p>Erreur lors du chargement des données.</p>";
       });
 
-    // Ajoute l'écouteur ici, UNIQUEMENT dans GET
+    // Ouvre la modal d'ajout lors du clic sur le bouton
     submitButton.onclick = () => {
       toggleGalleryModal("POST");
     };
   } else if (requestType === "POST") {
+    // --- Affichage du formulaire d'ajout (POST) ---
     document.getElementById("gallery-back-button").style.display = "flex";
-
     modalTitle.textContent = "Ajouter une photo";
     modalItems.innerHTML = `
       <form id="add-photo-form">
@@ -180,11 +181,10 @@ function toggleGalleryModal(requestType) {
         </div>
       </form>
     `;
-
     modalItems.style.justifyContent = "normal";
     modalItems.style.width = "400px";
 
-    // --- Correction : remplacer le bouton pour supprimer les anciens écouteurs ---
+    // Remplace le bouton pour supprimer les anciens écouteurs
     const oldSubmitButton = document.querySelector("#submit-button");
     const newSubmitButton = oldSubmitButton.cloneNode(true);
     oldSubmitButton.parentNode.replaceChild(newSubmitButton, oldSubmitButton);
@@ -194,18 +194,18 @@ function toggleGalleryModal(requestType) {
     newSubmitButton.style.backgroundColor = "#A7A7A7";
     newSubmitButton.disabled = true;
 
-    // Sélectionner les champs du formulaire
+    // Sélection des champs du formulaire d'ajout
     const form = document.getElementById("add-photo-form");
     const titleInput = document.getElementById("photo-title");
     const imageInput = document.getElementById("photo-url");
     const categorySelect = document.getElementById("photo-categorie");
     const formImgDiv = form.querySelector(".form-img");
 
-    // Prévisualisation de l'image
+    // --- Prévisualisation de l'image sélectionnée ---
     imageInput.addEventListener("change", (event) => {
       const file = event.target.files[0];
       if (file) {
-        // Appliquer le fond et la taille à la div
+        // Affiche l'aperçu dans le cadre bleu clair
         formImgDiv.innerHTML = "";
         formImgDiv.style.backgroundColor = "#E8F1F6";
         formImgDiv.style.height = "180px";
@@ -215,17 +215,15 @@ function toggleGalleryModal(requestType) {
         formImgDiv.style.borderRadius = "5px";
         formImgDiv.style.overflow = "hidden";
 
-        // Créer l'élément image
         const previewImg = document.createElement("img");
         previewImg.src = URL.createObjectURL(file);
         previewImg.style.width = "100%";
         previewImg.style.height = "100%";
         previewImg.style.objectFit = "contain";
         previewImg.style.borderRadius = "5px";
-        // Ajouter l'image à la div
         formImgDiv.appendChild(previewImg);
       } else {
-        // Si aucun fichier, remettre le contenu initial
+        // Remet le contenu initial si aucun fichier sélectionné
         formImgDiv.innerHTML = `
         <img id="photo-img" src="./assets/icons/picture-svg.png"></img>
         <label for="photo-url" class="file-label">+ Ajouter photo</label>
@@ -235,6 +233,7 @@ function toggleGalleryModal(requestType) {
       }
     });
 
+    // --- Active le bouton "Valider" si tous les champs sont remplis ---
     const checkFormCompletion = () => {
       const title = titleInput.value.trim();
       const imageFile = imageInput.files[0];
@@ -253,6 +252,7 @@ function toggleGalleryModal(requestType) {
     imageInput.addEventListener("input", checkFormCompletion);
     categorySelect.addEventListener("change", checkFormCompletion);
 
+    // --- Gère la soumission du formulaire d'ajout ---
     newSubmitButton.addEventListener("click", (event) => {
       event.preventDefault();
 
@@ -268,27 +268,27 @@ function toggleGalleryModal(requestType) {
       addWork(title, imageFile, categoryId);
     });
 
+    // Réinitialise le formulaire à chaque ouverture
     form.reset();
   }
 }
 
-// Fonction pour supprimer une image
+// --- Supprime un travail via l'API et retire l'élément du DOM ---
 function deleteWork(workId) {
-  const token = localStorage.getItem("token"); // Récupérer le token JWT depuis le localStorage
+  const token = localStorage.getItem("token");
 
   fetch(`${worksUrl}/${workId}`, {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`, // Ajouter le token JWT dans l'en-tête Authorization
+      Authorization: `Bearer ${token}`,
     },
   })
     .then((response) => {
       if (!response.ok) {
         throw new Error(`Erreur HTTP : ${response.status}`);
       }
-
-      // Supprimer dynamiquement l'élément de la galerie
+      // Retire l'élément supprimé de la galerie modale
       const workElement = document.querySelector(`[data-id="${workId}"]`);
       if (workElement) {
         workElement.remove();
@@ -299,8 +299,9 @@ function deleteWork(workId) {
     });
 }
 
+// --- Ajoute un nouveau travail via l'API et met à jour la galerie ---
 function addWork(title, imageFile, categoryId) {
-  const token = localStorage.getItem("token"); // Récupérer le token JWT depuis le localStorage
+  const token = localStorage.getItem("token");
 
   if (!imageFile) {
     console.error("Aucun fichier sélectionné.");
@@ -309,15 +310,15 @@ function addWork(title, imageFile, categoryId) {
 
   const formData = new FormData();
   formData.append("title", title);
-  formData.append("image", imageFile); // Ajouter le fichier
+  formData.append("image", imageFile);
   formData.append("category", categoryId);
 
   fetch(worksUrl, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${token}`, // Ajouter le token JWT dans l'en-tête Authorization
+      Authorization: `Bearer ${token}`,
     },
-    body: formData, // Envoyer les données sous forme de FormData
+    body: formData,
   })
     .then((response) => {
       if (!response.ok) {
@@ -326,7 +327,7 @@ function addWork(title, imageFile, categoryId) {
       return response.json();
     })
     .then((newWork) => {
-      // Ajouter dynamiquement le nouveau travail à la galerie
+      // Ajoute dynamiquement le nouveau travail à la galerie principale
       const figureElement = document.createElement("figure");
       const imgElement = document.createElement("img");
       const figcaptionElement = document.createElement("figcaption");
@@ -339,7 +340,7 @@ function addWork(title, imageFile, categoryId) {
       figureElement.appendChild(figcaptionElement);
       gallery.appendChild(figureElement);
 
-      // Réinitialiser le formulaire et le bouton
+      // Réinitialise le formulaire et le bouton
       const form = document.getElementById("add-photo-form");
       if (form) form.reset();
       const submitBtn = document.querySelector("#submit-button");
@@ -348,7 +349,7 @@ function addWork(title, imageFile, categoryId) {
         submitBtn.disabled = true;
       }
 
-      // Fermer la modal après ajout
+      // Ferme la modal après ajout
       toggleModal(false);
     })
     .catch((error) => {
@@ -356,11 +357,11 @@ function addWork(title, imageFile, categoryId) {
     });
 }
 
-// Ajouter des écouteurs d'événements aux boutons
+// --- Écouteurs pour ouvrir la modal galerie ou revenir en arrière ---
 document.getElementById("modify-gallery").addEventListener("click", () => {
-  toggleGalleryModal("GET"); // Requête GET pour afficher les travaux
+  toggleGalleryModal("GET");
 });
 
 document.getElementById("gallery-back-button").addEventListener("click", () => {
-  toggleGalleryModal("GET"); // Requête GET pour afficher les travaux
+  toggleGalleryModal("GET");
 });

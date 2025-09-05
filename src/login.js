@@ -1,50 +1,63 @@
 import { setConnectedStatus } from "../src/utils.js";
 
-const url = 'http://localhost:5678/api';
+// --- Définition des URLs de l'API ---
+const url = "http://localhost:5678/api";
 const loginUrl = `${url}/users/login`;
 
-const loginForm = document.getElementById('login-form');
-const errorEmail = document.getElementById('error-email');
-const errorPassword = document.getElementById('error-password');
+// --- Sélecteurs DOM pour le formulaire et les messages d'erreur ---
+const loginForm = document.getElementById("login-form");
+const errorEmail = document.getElementById("error-email");
+const errorPassword = document.getElementById("error-password");
 
-document.addEventListener('DOMContentLoaded', () => {
-  setConnectedStatus(); // Mettre à jour le statut de connexion
-  // Vérifier si l'utilisateur est déjà connecté
-  if (localStorage.getItem('token')) {
-    window.location.href = 'index.html'; // Rediriger vers la page d'accueil si connecté
+// --- Vérifie le statut de connexion à l'ouverture de la page ---
+document.addEventListener("DOMContentLoaded", () => {
+  setConnectedStatus(); // Met à jour l'affichage selon la connexion
+
+  // Si l'utilisateur est déjà connecté, redirige vers la page d'accueil
+  if (localStorage.getItem("token")) {
+    window.location.href = "index.html";
   }
 });
 
-loginForm.addEventListener('submit', async (event) => {
-  event.preventDefault(); // Empêcher le rechargement de la page
+// --- Gestion de la soumission du formulaire de connexion ---
+loginForm.addEventListener("submit", async (event) => {
+  event.preventDefault(); // Empêche le rechargement de la page
 
-  const email = document.querySelector('#email').value;
-  const password = document.querySelector('#password').value;
+  // Récupère les valeurs saisies par l'utilisateur
+  const email = document.querySelector("#email").value;
+  const password = document.querySelector("#password").value;
 
   try {
+    // Envoie la requête de connexion à l'API
     const response = await fetch(loginUrl, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ email, password }),
     });
 
+    // Gère les erreurs de connexion
     if (!response.ok) {
       if (response.status === 404) {
-        errorEmail.textContent = 'Email incorrect. Veuillez réessayer.'; // Message spécifique pour erreur 404
-        errorEmail.style.color = 'red'; // Couleur rouge pour l'erreur
-      } else if(response.status === 401) {
-        errorPassword.textContent = 'Mot de passe incorrect. Veuillez réessayer.'; // Message spécifique pour erreur 404
-        errorPassword.style.color = 'red'; // Couleur
+        // Email incorrect
+        errorEmail.textContent = "Email incorrect. Veuillez réessayer.";
+        errorEmail.style.color = "red";
+      } else if (response.status === 401) {
+        // Mot de passe incorrect
+        errorPassword.textContent =
+          "Mot de passe incorrect. Veuillez réessayer.";
+        errorPassword.style.color = "red";
       }
       throw new Error(`Erreur HTTP : ${response.status}`);
     }
 
+    // Si la connexion réussit, stocke le token et redirige
     const data = await response.json();
-    localStorage.setItem('token', data.token); // Stocker le token dans le localStorage
-    window.location.href = 'index.html'; // Rediriger vers la page d'accueil
+    localStorage.setItem("token", data.token);
+    window.location.href = "index.html";
   } catch (error) {
-    console.error('Erreur lors de la connexion :', error);
+    // Affiche l'erreur dans la console pour le debug
+    console.error("Erreur lors de la connexion :", error);
   }
 });
