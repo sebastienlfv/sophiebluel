@@ -11,8 +11,6 @@ const errorPassword = document.getElementById("error-password");
 
 // --- Vérifie le statut de connexion à l'ouverture de la page ---
 document.addEventListener("DOMContentLoaded", () => {
-  setConnectedStatus(); // Met à jour l'affichage selon la connexion
-
   // Si l'utilisateur est déjà connecté, redirige vers la page d'accueil
   if (localStorage.getItem("token")) {
     window.location.href = "index.html";
